@@ -298,6 +298,43 @@ func TestOpErrorCode(t *testing.T) {
 	OpEquals(t, errcode.OpErrCode{Operation: "opcode", Err: has}, "opcode")
 }
 
+type MultiErrors struct{ Multi []error }
+
+// Errors fullfills the ErrorGroup inteface
+func (e MultiErrors) Error() string {
+	return "MultiErrors"
+}
+
+func (e MultiErrors) Errors() []error {
+	return e.Multi
+}
+
+func TestErrorCodeChain(t *testing.T) {
+	AssertCodeChain(t, errors.New("nil"), nil)
+
+	code := MinimalError{}
+	AssertCodeChain(t, code, code)
+	ann := errors.Annotate(code, "added annotation")
+	AssertCodeChain(t, ann, errcode.ChainContext{Top: ann, ErrCode: code})
+	ann2 := errors.Annotate(ann, "another annotation")
+	AssertCodeChain(t, ann2, errcode.ChainContext{Top: ann2, ErrCode: code})
+
+	code2 := MinimalError{}
+	multiCode := errcode.Combine(code, code2)
+	annMultiCode := errors.Annotate(multiCode, "multi ann")
+	AssertCodeChain(t, annMultiCode, errcode.ChainContext{Top: annMultiCode, ErrCode: multiCode})
+	multiErr := MultiErrors{Multi: []error{errors.New("ignore"), annMultiCode}}
+	AssertCodeChain(t, multiErr, errcode.ChainContext{Top: multiErr, ErrCode: multiCode})
+}
+
+func AssertCodeChain(t *testing.T, input error, expected errcode.ErrorCode) {
+	t.Helper()
+	output := errcode.CodeChain(input)
+	if !reflect.DeepEqual(output, expected) {
+		t.Errorf("ErrorCodeChain expected type %T value %#v\ngot type %T value %#v", expected, expected, output, output)
+	}
+}
+
 func AssertCodes(t *testing.T, code errcode.ErrorCode, codeStrs ...errcode.CodeStr) {
 	t.Helper()
 	AssertCode(t, code, codeStrs...)

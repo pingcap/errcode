@@ -36,7 +36,7 @@
 // Stack traces are automatically added by NewInternalErr and show up as the Stack field in JSONFormat.
 // Errors can be grouped with Combine() and ungrouped via Errors() which show up as the Others field in JSONFormat.
 //
-// To extract an ErrorCode from an error, use ErrorCodeChain().
+// To extract any ErrorCodes from an error, use CodeChain().
 // This extracts error codes without information loss (using ChainContext).
 package errcode
 
