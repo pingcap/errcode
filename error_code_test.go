@@ -19,7 +19,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/pingcap/pd/pkg/error_code"
+	"github.com/pingcap/errcode"
 	"github.com/pkg/errors"
 )
 
