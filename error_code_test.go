@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"github.com/pingcap/errcode"
-	"github.com/pkg/errors"
+	"github.com/pingcap/errors"
 )
 
 // Test setting the HTTP code

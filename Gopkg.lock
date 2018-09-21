@@ -2,28 +2,16 @@
 
 
 [[projects]]
-  digest = "1:11b4a66e1b11bb7aa94218c5f621b416890029e35a165435d19e9940f0995d32"
-  name = "github.com/pingcap/pd"
-  packages = ["pkg/error_code"]
-  pruneopts = "NUT"
-  revision = "6a7832d2d6e5b2923c79683183e63d030f954563"
-  version = "v2.1.0-rc.2"
-
-[[projects]]
   digest = "1:677ff2ee188099669fbecf583de8c23111020adee48d71a6f60c733f6b2fea7a"
-  name = "github.com/pkg/errors"
+  name = "github.com/pingcap/errors"
   packages = ["."]
   pruneopts = "NUT"
   revision = "31ffda8a65b0f910c6d65f1fef40e761fd606384"
-  source = "https://github.com/pingcap/errors"
   version = "v0.10.1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  input-imports = [
-    "github.com/pingcap/pd/pkg/error_code",
-    "github.com/pkg/errors",
-  ]
+  input-imports = ["github.com/pingcap/errors"]
   solver-name = "gps-cdcl"
   solver-version = 1

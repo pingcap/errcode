@@ -4,6 +4,5 @@
   unused-packages = true
 
 [[constraint]]
-  name = "github.com/pkg/errors"
+  name = "github.com/pingcap/errors"
   version = ">= 0.10.0"
-  source = "https://github.com/pingcap/errors"

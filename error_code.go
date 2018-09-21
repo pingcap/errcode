@@ -44,7 +44,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/pkg/errors"
+	"github.com/pingcap/errors"
 )
 
 // CodeStr is a representation of the type of a particular error.
