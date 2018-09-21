@@ -147,7 +147,8 @@ func CodeChain(err error) ErrorCode {
 
 // ChainContext is returned by ErrorCodeChain
 // to retain the full wrapped error message of the error chain.
-// If you add context to an error code, this retains that in the Error() message.
+// If you annotated an ErrorCode with additional information, it is retained in the Top field.
+// The Top field is used for the Error() and Cause() methods.
 type ChainContext struct {
 	Top     error
 	ErrCode ErrorCode

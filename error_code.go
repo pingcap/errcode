@@ -14,6 +14,8 @@
 // Package errcode facilitates standardized API error codes.
 // The goal is that clients can reliably understand errors by checking against immutable error codes
 //
+// This godoc documents usage. For broader context, see https://github.com/pingcap/errcode/tree/master/README.md
+//
 // Error codes are represented as strings by CodeStr (see CodeStr documentation).
 //
 // This package is designed to have few opinions and be a starting point for how you want to do errors in your project.
@@ -62,7 +64,6 @@ func (str CodeStr) String() string { return string(str) }
 
 // A Code has a CodeStr representation.
 // It is attached to a Parent to find metadata from it.
-// The Meta field is provided for extensibility: e.g. attaching HTTP codes.
 type Code struct {
 	// codeStr does not include parent paths
 	// The full code (with parent paths) is accessed with CodeStr
@@ -120,9 +121,9 @@ func (code Code) IsAncestor(ancestorCode Code) bool {
 	return nil != code.findAncestor(func(an Code) bool { return an == ancestorCode })
 }
 
-// MetaData is a pattern for attaching meta data to codes and inheriting it from a parent.
+// MetaData is used in a pattern for attaching meta data to codes and inheriting it from a parent.
 // See MetaDataFromAncestors.
-// This is used to attach an HTTP code to a Code.
+// This is used to attach an HTTP code to a Code as meta data.
 type MetaData map[CodeStr]interface{}
 
 // MetaDataFromAncestors looks for meta data starting at the current code.
