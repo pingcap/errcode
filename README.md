@@ -1,6 +1,7 @@
 # errcode
 
 This package extends go errors via interfaces to have error codes.
+The goal is that clients can reliably understand errors by checking against error codes
 
 There are other packages that add capabilities including error codes to errors.
 There is a fundamental difference in architectural decision that this package makes.
@@ -11,10 +12,10 @@ Additional features (for example annotating the operation) are done via wrapping
 
 This package integrates and relies on pkg/errors (actually the pingcap/errors enhancement of it).
 
-See the go documentation for extensive documentation.
+See the [go docs](https://godoc.org/github.com/pingcap/errcode) for extensive documentation.
 
 
-## Error codes
+## About Error codes
 
-Error codes are useful to transmit error types across network boundaries.
+Error codes are useful to reliably transmit error types across network boundaries.
 A program can reliably respond to an error if it can be sure to understand its type.
