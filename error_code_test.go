@@ -30,10 +30,10 @@ func (e HTTPError) Error() string { return "error" }
 
 const httpCodeStr = "input.http"
 
-var codeHttp900 = errcode.InvalidInputCode.Child(httpCodeStr).SetHTTP(900)
+var codeHTTP900 = errcode.InvalidInputCode.Child(httpCodeStr).SetHTTP(900)
 
 func (e HTTPError) Code() errcode.Code {
-	return codeHttp900
+	return codeHTTP900
 }
 
 func TestHttpErrorCode(t *testing.T) {
