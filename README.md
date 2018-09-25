@@ -47,3 +47,11 @@ See the [go docs](https://godoc.org/github.com/pingcap/errcode) for extensive AP
 
 Error codes are particularly useful to reliably communicate the error type across program (network) boundaries.
 A program can reliably respond to an error if it can be sure to understand its type.
+
+## Development
+
+``` shell
+go build
+go test
+./scripts check
+```
