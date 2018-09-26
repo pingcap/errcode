@@ -23,30 +23,24 @@ warningCode = 0
 
 # Add these once issues are fixed
 [rule.confusing-naming]
-  severity = "warning"
 [rule.confusing-results]
-  severity = "warning"
 [rule.flag-parameter]
-  severity = "warning"
 
 # Currently this makes too much noise, but should add it in
 # and perhaps ignore it in a few files
-#[rule.unused-parameter]
-#  severity = "warning"
-#[rule.deep-exit]
-#  severity = "warning"
+[rule.unused-parameter]
+[rule.deep-exit]
 
 
-# Already checked by megacheck
-# [rule.unreachable-code]
+# checked by megacheck
+[rule.unreachable-code]
 
 # Adding these will slow down the linter
-# They are already provided by megacheck
-# [rule.unexported-return]
-# [rule.time-naming]
-# [rule.errorf]
+# They are also provided by megacheck
+[rule.unexported-return]
+[rule.time-naming]
+[rule.errorf]
 
 # Adding these will slow down the linter
 # Not sure if they are already provided by megacheck
-# [rule.var-declaration]
-# [rule.context-keys-type]
+[rule.context-keys-type]

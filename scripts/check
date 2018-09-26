@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
-set -x
 
 which retool >/dev/null 2>&1 || go get github.com/twitchtv/retool
 ./scripts/retool sync
