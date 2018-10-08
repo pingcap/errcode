@@ -36,6 +36,9 @@ It is easy to gradually introduce it into a project that is using pkg/errors (or
 * Operation annotation. This concept is [explained here](https://commandcenter.blogspot.com/2017/12/error-handling-in-upspin.html).
 * Works for multiple errors when the Errors() interface is used. See the `Combine` function for constructing multiple error codes.
 * Extensible metadata. See how SetHTTPCode is implemented.
+* Integration with existing error codes
+  * HTTP
+  * GRPC (provided by separate grpc package)
 
 
 ## Example
@@ -98,7 +101,7 @@ func moveX(start, end, obstacle) error {}
 ## Development
 
 ``` shell
-go build
-go test
+./scripts build
+./scripts test
 ./scripts check
 ```

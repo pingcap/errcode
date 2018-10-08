@@ -44,7 +44,6 @@ package errcode
 
 import (
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/pingcap/errors"
@@ -119,46 +118,6 @@ func (code Code) findAncestor(test func(Code) bool) *Code {
 // IsAncestor looks for the given code in its ancestors.
 func (code Code) IsAncestor(ancestorCode Code) bool {
 	return nil != code.findAncestor(func(an Code) bool { return an == ancestorCode })
-}
-
-// MetaData is used in a pattern for attaching meta data to codes and inheriting it from a parent.
-// See MetaDataFromAncestors.
-// This is used to attach an HTTP code to a Code as meta data.
-type MetaData map[CodeStr]interface{}
-
-// MetaDataFromAncestors looks for meta data starting at the current code.
-// If not found, it traverses up the hierarchy
-// by looking for the first ancestor with the given metadata key.
-// This is used in the HTTPCode implementation to inherit the HTTP Code from ancestors.
-func (code Code) MetaDataFromAncestors(metaData MetaData) interface{} {
-	if existing, ok := metaData[code.CodeStr()]; ok {
-		return existing
-	}
-	if code.Parent == nil {
-		return nil
-	}
-	return (*code.Parent).MetaDataFromAncestors(metaData)
-}
-
-var httpMetaData = make(MetaData)
-
-// SetHTTP adds an HTTP code to the meta data
-func (code Code) SetHTTP(httpCode int) Code {
-	if existingCode, ok := httpMetaData[code.CodeStr()]; ok {
-		panic(fmt.Sprintf("http already exists %v for %+v", existingCode, code))
-	}
-	httpMetaData[code.CodeStr()] = httpCode
-	return code
-}
-
-// HTTPCode retrieves the HTTP code for a code or its first ancestor with an HTTP code.
-// If none are specified, it defaults to 400 BadRequest
-func (code Code) HTTPCode() int {
-	httpCode := code.MetaDataFromAncestors(httpMetaData)
-	if httpCode == nil {
-		return http.StatusBadRequest
-	}
-	return httpCode.(int)
 }
 
 // ErrorCode is the interface that ties an error and RegisteredCode together.
