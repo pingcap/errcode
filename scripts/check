@@ -5,20 +5,20 @@ which retool >/dev/null 2>&1 || go get github.com/twitchtv/retool
 ./scripts/retool sync
 
 # Not running vet and fmt through metalinter becauase it ends up looking at vendor
-gofmt -s -l *.go 2>&1 | awk '{ print } END { if (NR > 0) { exit 1 } }'
+gofmt -s -l *.go grpc/*.go 2>&1 | awk '{ print } END { if (NR > 0) { exit 1 } }'
 
 echo "linting"
-CGO_ENABLED=0 ./scripts/retool do revive -formatter friendly -config revive.toml *.go
+CGO_ENABLED=0 ./scripts/retool do revive -formatter friendly -config revive.toml *.go grpc/*.go
 
 echo "checking"
-./scripts/retool do govet --shadow *.go 2>&1 | awk '{ print } END { if (NR > 0) { exit 1 } }'
+./scripts/retool do govet --shadow *.go grpc/*.go 2>&1 | awk '{ print } END { if (NR > 0) { exit 1 } }'
 
 # --enable megacheck \
 CGO_ENABLED=0 ./scripts/retool do gometalinter.v2 --disable-all --deadline 120s \
   --enable misspell \
   --enable ineffassign \
-  *.go
+  *.go grpc/*.go
 
 echo "extensive checks"
-# CGO_ENABLED=0 ./scripts/retool do gometalinter.v2 --disable-all --enable errcheck *.go
-CGO_ENABLED=0 ./scripts/retool do gosec *.go
+# CGO_ENABLED=0 ./scripts/retool do gometalinter.v2 --disable-all --enable errcheck *.go grpc/*.go
+CGO_ENABLED=0 ./scripts/retool do gosec *.go grpc/*.go

@@ -13,18 +13,36 @@
 
 package errcode
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+)
 
 var (
 	// InternalCode is equivalent to HTTP 500 Internal Server Error.
 	InternalCode = NewCode("internal").SetHTTP(http.StatusInternalServerError)
-	// InvalidInputCode is equivalent to HTTP 400 Bad Request.
-	InvalidInputCode = NewCode("input").SetHTTP(http.StatusBadRequest)
+
 	// NotFoundCode is equivalent to HTTP 404 Not Found.
 	NotFoundCode = NewCode("missing").SetHTTP(http.StatusNotFound)
-	// StateCode is an error that is invalid due to the current object state.
+
+	// UnimplementedCode is mapped to HTTP 501.
+	UnimplementedCode = InternalCode.Child("internal.unimplemented").SetHTTP(http.StatusNotImplemented)
+
+	// StateCode is an error that is invalid due to the current system state.
+	// This operatiom could become valid if the system state changes
 	// This is mapped to HTTP 400.
 	StateCode = NewCode("state").SetHTTP(http.StatusBadRequest)
+
+	// AlreadyExistsCode indicates an attempt to create an entity failed because it already exists.
+	// This is mapped to HTTP 409.
+	AlreadyExistsCode = StateCode.Child("state.exists").SetHTTP(http.StatusConflict)
+
+	// OutOfRangeCode indicates an operation was attempted past a valid range.
+	// This is mapped to HTTP 400.
+	OutOfRangeCode = StateCode.Child("state.range")
+
+	// InvalidInputCode is equivalent to HTTP 400 Bad Request.
+	InvalidInputCode = NewCode("input").SetHTTP(http.StatusBadRequest)
 
 	// AuthCode represents an authentication or authorization issue.
 	AuthCode = NewCode("auth")
@@ -56,25 +74,50 @@ var _ Causer = (*invalidInputErr)(nil)        // assert implements interface
 // internalError gives the code InternalCode
 type internalErr struct{ StackCode }
 
+var internalStackCode = makeInternalStackCode(InternalCode)
+
 // NewInternalErr creates an internalError from an err.
 // If the given err is an ErrorCode that is a descendant of InternalCode,
 // its code will be used.
 // This ensures the intention of sending an HTTP 50x.
 // This function also records a stack trace.
 func NewInternalErr(err error) ErrorCode {
-	code := InternalCode
-	if errcode, ok := err.(ErrorCode); ok {
-		errCode := errcode.Code()
-		if errCode.IsAncestor(InternalCode) {
-			code = errCode
-		}
-	}
-	return internalErr{NewStackCode(CodedError{GetCode: code, Err: err}, 2)}
+	return internalErr{internalStackCode(err)}
 }
 
 var _ ErrorCode = (*internalErr)(nil)     // assert implements interface
 var _ HasClientData = (*internalErr)(nil) // assert implements interface
 var _ Causer = (*internalErr)(nil)        // assert implements interface
+
+// makeInternalStackCode builds a function for making an an internal error with a stack trace.
+func makeInternalStackCode(defaultCode Code) func(error) StackCode {
+	if !defaultCode.IsAncestor(InternalCode) {
+		panic(fmt.Errorf("code is not an internal code: %v", defaultCode))
+	}
+	return func(err error) StackCode {
+		code := defaultCode
+		if errcode, ok := err.(ErrorCode); ok {
+			errCode := errcode.Code()
+			if errCode.IsAncestor(InternalCode) {
+				code = errCode
+			}
+		}
+		return NewStackCode(CodedError{GetCode: code, Err: err}, 3)
+	}
+}
+
+type unimplementedErr struct{ StackCode }
+
+var unimplementedStackCode = makeInternalStackCode(UnimplementedCode)
+
+// NewUnimplementedErr creates an internalError from an err.
+// If the given err is an ErrorCode that is a descendant of InternalCode,
+// its code will be used.
+// This ensures the intention of sending an HTTP 50x.
+// This function also records a stack trace.
+func NewUnimplementedErr(err error) ErrorCode {
+	return unimplementedErr{unimplementedStackCode(err)}
+}
 
 // notFound gives the code NotFoundCode.
 type notFoundErr struct{ CodedError }
