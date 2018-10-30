@@ -44,7 +44,7 @@ func SetCode(code errcode.Code, grpcCode codes.Code) errcode.Code {
 }
 
 // GetCode retrieves the GRPC code for a code or its first ancestor with a GRPC code.
-// If none are specified, it defaults to Unkown (Code 2).
+// If none are specified, it defaults to Unknown (Code 2).
 // The return of this is a GRPC codes package Code, not an errcode.Code
 func GetCode(code errcode.Code) codes.Code {
 	grpcCode := code.MetaDataFromAncestors(grpcMetaData)
