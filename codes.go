@@ -57,37 +57,23 @@ var (
 	ForbiddenCode = AuthCode.Child("auth.forbidden").SetHTTP(http.StatusForbidden)
 )
 
-// invalidInput gives the code InvalidInputCode.
-type invalidInputErr struct{ CodedError }
-
 // NewInvalidInputErr creates an invalidInput from an err.
 // If the error is already an ErrorCode it will use that code.
 // Otherwise it will use InvalidInputCode which gives HTTP 400.
 func NewInvalidInputErr(err error) ErrorCode {
-	return invalidInputErr{NewCodedError(err, InvalidInputCode)}
+	return NewCodedError(err, InvalidInputCode)
 }
-
-var _ ErrorCode = (*invalidInputErr)(nil)     // assert implements interface
-var _ HasClientData = (*invalidInputErr)(nil) // assert implements interface
-var _ Causer = (*invalidInputErr)(nil)        // assert implements interface
-
-// internalError gives the code InternalCode
-type internalErr struct{ StackCode }
 
 var internalStackCode = makeInternalStackCode(InternalCode)
 
-// NewInternalErr creates an internalError from an err.
-// If the given err is an ErrorCode that is a descendant of InternalCode,
-// its code will be used.
+// NewInternalErr creates an ErrorCode with code InternalCode from an error.
+// If the given error is an ErrorCode that is a descendant of InternalCode,
+// it will be returned (as an ErrorCode).
 // This ensures the intention of sending an HTTP 50x.
 // This function also records a stack trace.
 func NewInternalErr(err error) ErrorCode {
-	return internalErr{internalStackCode(err)}
+	return internalStackCode(err)
 }
-
-var _ ErrorCode = (*internalErr)(nil)     // assert implements interface
-var _ HasClientData = (*internalErr)(nil) // assert implements interface
-var _ Causer = (*internalErr)(nil)        // assert implements interface
 
 // makeInternalStackCode builds a function for making an an internal error with a stack trace.
 func makeInternalStackCode(defaultCode Code) func(error) StackCode {
@@ -97,9 +83,8 @@ func makeInternalStackCode(defaultCode Code) func(error) StackCode {
 	return func(err error) StackCode {
 		code := defaultCode
 		if errcode, ok := err.(ErrorCode); ok {
-			errCode := errcode.Code()
-			if errCode.IsAncestor(InternalCode) {
-				code = errCode
+			if errcode.Code().IsAncestor(InternalCode) {
+				return NewStackCode(errcode, 3)
 			}
 		}
 		return NewStackCode(CodedError{GetCode: code, Err: err}, 3)
@@ -110,7 +95,7 @@ type unimplementedErr struct{ StackCode }
 
 var unimplementedStackCode = makeInternalStackCode(UnimplementedCode)
 
-// NewUnimplementedErr creates an internalError from an err.
+// NewUnimplementedErr creates an ErrorCode of InternalCode from an err.
 // If the given err is an ErrorCode that is a descendant of InternalCode,
 // its code will be used.
 // This ensures the intention of sending an HTTP 50x.
@@ -119,49 +104,28 @@ func NewUnimplementedErr(err error) ErrorCode {
 	return unimplementedErr{unimplementedStackCode(err)}
 }
 
-// notFound gives the code NotFoundCode.
-type notFoundErr struct{ CodedError }
-
 // NewNotFoundErr creates a notFound from an err.
 // If the error is already an ErrorCode it will use that code.
 // Otherwise it will use NotFoundCode which gives HTTP 404.
 func NewNotFoundErr(err error) ErrorCode {
-	return notFoundErr{NewCodedError(err, NotFoundCode)}
+	return NewCodedError(err, NotFoundCode)
 }
 
-var _ ErrorCode = (*notFoundErr)(nil)     // assert implements interface
-var _ HasClientData = (*notFoundErr)(nil) // assert implements interface
-var _ Causer = (*notFoundErr)(nil)        // assert implements interface
-
-// notAuthenticatedErr gives the code NotAuthenticatedCode.
-type notAuthenticatedErr struct{ CodedError }
-
-// NewNotAuthenticatedErr creates a notAuthenticatedErr from an err.
+// NewNotAuthenticatedErr creates an ErrorCode of code NotAuthenticatedCode from an err.
 // If the error is already an ErrorCode it will use that code.
 // Otherwise it will use NotAuthenticatedCode which gives HTTP 401.
 func NewNotAuthenticatedErr(err error) ErrorCode {
-	return notAuthenticatedErr{NewCodedError(err, NotAuthenticatedCode)}
+	return NewCodedError(err, NotAuthenticatedCode)
 }
 
-var _ ErrorCode = (*notAuthenticatedErr)(nil)     // assert implements interface
-var _ HasClientData = (*notAuthenticatedErr)(nil) // assert implements interface
-var _ Causer = (*notAuthenticatedErr)(nil)        // assert implements interface
-
-// forbiddenErr gives the code ForbiddenCode.
-type forbiddenErr struct{ CodedError }
-
-// NewForbiddenErr creates a forbiddenErr from an err.
+// NewForbiddenErr creates an ErrorCode of ForbiddenCode from an err.
 // If the error is already an ErrorCode it will use that code.
 // Otherwise it will use ForbiddenCode which gives HTTP 401.
 func NewForbiddenErr(err error) ErrorCode {
-	return forbiddenErr{NewCodedError(err, ForbiddenCode)}
+	return NewCodedError(err, ForbiddenCode)
 }
 
-var _ ErrorCode = (*forbiddenErr)(nil)     // assert implements interface
-var _ HasClientData = (*forbiddenErr)(nil) // assert implements interface
-var _ Causer = (*forbiddenErr)(nil)        // assert implements interface
-
-// CodedError is a convenience to attach a code to an error and already satisfy the ErrorCode interface.
+// CodedError is a convenience to attach a code to an error and satisfy the ErrorCode interface.
 // If the error is a struct, that struct will get preseneted as data to the client.
 //
 // To override the http code or the data representation or just for clearer documentation,
@@ -175,13 +139,16 @@ type CodedError struct {
 // NewCodedError is for constructing broad error kinds (e.g. those representing HTTP codes)
 // Which could have many different underlying go errors.
 // Eventually you may want to give your go errors more specific codes.
-// The second argument is the broad code.
 //
 // If the error given is already an ErrorCode,
 // that will be used as the code instead of the second argument.
-func NewCodedError(err error, code Code) CodedError {
+func NewCodedError(err error, code Code) ErrorCode {
 	if errcode, ok := err.(ErrorCode); ok {
-		code = errcode.Code()
+		newCode := errcode.Code()
+		if newCode == code {
+			return errcode
+		}
+		code = newCode
 	}
 	return CodedError{GetCode: code, Err: err}
 }
