@@ -50,6 +50,9 @@ func (e StackCode) StackTrace() errors.StackTrace {
 // NewStackCode first looks at the underlying error chain to see if it already has a StackTrace.
 // If so, that StackTrace is used.
 func NewStackCode(err ErrorCode, position ...int) StackCode {
+	if err == nil {
+		panic("NewStackCode: given error is nil")
+	}
 	stackPosition := 1
 	if len(position) > 0 {
 		stackPosition = position[0]
