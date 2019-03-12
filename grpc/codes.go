@@ -24,6 +24,39 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// StatusGRPC is the interface to a GRPC status code
+type StatusGRPC interface {
+	GRPCStatus() *status.Status
+}
+
+// ErrorCodeStatus is both an ErrorCode and a GRPC Status
+type ErrorCodeStatus interface {
+	errcode.ErrorCode
+	StatusGRPC
+}
+
+type codeStatus struct {
+	errcode.ErrorCode
+}
+
+func (wrapper codeStatus) GRPCStatus() *status.Status {
+	return Status(wrapper.ErrorCode)
+}
+
+func (wrapper codeStatus) Cause() error {
+	return wrapper.ErrorCode
+}
+
+var _ errcode.ErrorCode = (*codeStatus)(nil)     // assert implements interface
+var _ StatusGRPC = (*codeStatus)(nil)     // assert implements interface
+var _ errcode.Causer = (*codeStatus)(nil)     // assert implements interface
+
+
+// WrapAsGRPC constructs a value that responds as both an ErrorCode and as a GRPC status
+func WrapAsGRPC(code errcode.ErrorCode) ErrorCodeStatus {
+	return codeStatus{code}
+}
+
 // Status creates a GRPC Status object from an ErrorCode.
 // TODO: add more information in the details fields.
 func Status(code errcode.ErrorCode) *status.Status {
@@ -44,7 +77,7 @@ func SetCode(code errcode.Code, grpcCode codes.Code) errcode.Code {
 }
 
 // GetCode retrieves the GRPC code for a code or its first ancestor with a GRPC code.
-// If none are specified, it defaults to Unknown (Code 2).
+// If none are specified, it defaults to Unkown (Code 2).
 // The return of this is a GRPC codes package Code, not an errcode.Code
 func GetCode(code errcode.Code) codes.Code {
 	grpcCode := code.MetaDataFromAncestors(grpcMetaData)
