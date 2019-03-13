@@ -95,6 +95,9 @@ func makeInternalStackCode(defaultCode Code) func(error) StackCode {
 		panic(fmt.Errorf("code is not an internal code: %v", defaultCode))
 	}
 	return func(err error) StackCode {
+		if err == nil {
+			panic("makeInternalStackCode error is nil")
+		}
 		code := defaultCode
 		if errcode, ok := err.(ErrorCode); ok {
 			errCode := errcode.Code()
@@ -180,6 +183,9 @@ type CodedError struct {
 // If the error given is already an ErrorCode,
 // that will be used as the code instead of the second argument.
 func NewCodedError(err error, code Code) CodedError {
+	if err == nil {
+		panic("NewCodedError error is nil")
+	}
 	if errcode, ok := err.(ErrorCode); ok {
 		code = errcode.Code()
 	}

@@ -104,6 +104,9 @@ func (addOp AddOp) AddTo(err ErrorCode) OpErrCode {
 //
 func Op(operation string) AddOp {
 	return func(err ErrorCode) OpErrCode {
+		if err == nil {
+			panic("Op error is nil")
+		}
 		return OpErrCode{Operation: operation, Err: err}
 	}
 }
