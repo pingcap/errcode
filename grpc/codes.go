@@ -24,6 +24,39 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// StatusGRPC is the interface to a GRPC status code
+type StatusGRPC interface {
+	GRPCStatus() *status.Status
+}
+
+// ErrorCodeStatus is both an ErrorCode and a GRPC Status
+type ErrorCodeStatus interface {
+	errcode.ErrorCode
+	StatusGRPC
+}
+
+type codeStatus struct {
+	errcode.ErrorCode
+}
+
+func (wrapper codeStatus) GRPCStatus() *status.Status {
+	return Status(wrapper.ErrorCode)
+}
+
+func (wrapper codeStatus) Cause() error {
+	return wrapper.ErrorCode
+}
+
+var _ errcode.ErrorCode = (*codeStatus)(nil)     // assert implements interface
+var _ StatusGRPC = (*codeStatus)(nil)     // assert implements interface
+var _ errcode.Causer = (*codeStatus)(nil)     // assert implements interface
+
+
+// WrapAsGRPC constructs a value that responds as both an ErrorCode and as a GRPC status
+func WrapAsGRPC(code errcode.ErrorCode) ErrorCodeStatus {
+	return codeStatus{code}
+}
+
 // Status creates a GRPC Status object from an ErrorCode.
 // TODO: add more information in the details fields.
 func Status(code errcode.ErrorCode) *status.Status {
