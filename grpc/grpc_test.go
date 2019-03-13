@@ -14,6 +14,7 @@
 package grpc_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/pingcap/errcode"
@@ -35,8 +36,13 @@ func (e GRPCError) Code() errcode.Code {
 }
 
 func TestGrpcErrorCode(t *testing.T) {
-	grpc := GRPCError{}
-	AssertGRPCCode(t, grpc, codes.Aborted)
+	err := GRPCError{}
+	AssertGRPCCode(t, err, codes.Aborted)
+}
+
+func TestWrapAsGrpc(t *testing.T) {
+	err := grpc.WrapAsGRPC(errcode.NewInternalErr(fmt.Errorf("wrap me up")))
+	AssertGRPCCode(t, err, codes.Internal)
 }
 
 func AssertGRPCCode(t *testing.T, code errcode.ErrorCode, grpcCode codes.Code) {
