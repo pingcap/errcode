@@ -1,24 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-which retool >/dev/null 2>&1 || go get github.com/twitchtv/retool
-./scripts/retool sync
+export CGO_ENABLED=0
+pushd "$(dirname "$0")/.." >/dev/null
 
-# Not running vet and fmt through metalinter becauase it ends up looking at vendor
-gofmt -s -l *.go grpc/*.go 2>&1 | awk '{ print } END { if (NR > 0) { exit 1 } }'
+PKGS=$(go list "." ./grpc | sed 's|github.com/pingcap/dbaas/||')
+echo checking packages: $PKGS
+pushd tools
+./install.sh
+popd
+
+# Some linters only work if code is vendored
+GO111MODULE=on go mod vendor
 
 echo "linting"
-CGO_ENABLED=0 ./scripts/retool do revive -formatter friendly -config revive.toml *.go grpc/*.go
+./tools/bin/revive -formatter friendly -config conf/revive.toml ${PKGS}
 
 echo "checking"
-./scripts/retool do govet --shadow *.go grpc/*.go 2>&1 | awk '{ print } END { if (NR > 0) { exit 1 } }'
-
-# --enable megacheck \
-CGO_ENABLED=0 ./scripts/retool do gometalinter.v2 --disable-all --deadline 120s \
-  --enable misspell \
-  --enable ineffassign \
-  *.go grpc/*.go
-
-echo "extensive checks"
-# CGO_ENABLED=0 ./scripts/retool do gometalinter.v2 --disable-all --enable errcheck *.go grpc/*.go
-CGO_ENABLED=0 ./scripts/retool do gosec *.go grpc/*.go
+# golangci has a bug when given file arguments
+./tools/bin/golangci-lint run

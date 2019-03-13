@@ -1,0 +1,13 @@
+linters:
+  enable:
+    - ineffassign
+    - deadcode
+    - goconst 
+    - interfacer 
+    - misspell 
+    - vetshadow 
+    - vet
+  enable-all: false
+  disable:
+  disable-all: false
+  fast: false
