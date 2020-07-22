@@ -101,7 +101,7 @@ func moveX(start, end, obstacle) error {}
 ## Development
 
 ``` shell
-./scripts build
-./scripts test
-./scripts check
+./scripts/build
+./scripts/test
+./scripts/check
 ```
