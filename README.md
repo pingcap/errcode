@@ -1,9 +1,13 @@
 ## About Error codes
 
-Error codes are particularly useful to reliably communicate the error type across program (network) boundaries.
+Error codes reliably communicate the error type, particularly across program (network) boundaries.
 A program can reliably respond to an error if it can be sure to understand its type.
 Error monitoring systems can reliably understand what errors are occurring.
 
+## status
+
+This library is in a completed state.
+It should be updated now though for some of the changes to golang for error wrapping.
 
 # errcode overview
 
